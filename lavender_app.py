@@ -1,22 +1,29 @@
 import streamlit as st
+import pinecone
 from langchain.chat_models import ChatOpenAI
-from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import OpenAIEmbeddings
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
+from langchain.vectorstores import Pinecone as LangchainPinecone
 
-# Set up page
-st.set_page_config(page_title="Lavender's Garden", layout="centered")
+# 🌸 Load API keys securely from Streamlit secrets
+openai_api_key = st.secrets["OPENAI_API_KEY"]
+pinecone_api_key = st.secrets["PINECONE_API_KEY"]
+pinecone_env = st.secrets["PINECONE_ENVIRONMENT"]
 
-# Initialize chat history
-if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = []
+# 🌿 Initialize Pinecone (v2 correct syntax)
+pinecone.init(api_key=pinecone_api_key, environment=pinecone_env)
 
-# Load memory (this must come before generating responses)
-embeddings = OpenAIEmbeddings()
-db = Chroma(persist_directory="./lavender_memory", embedding_function=embeddings)
+# ✅ Exact index name from Pinecone dashboard
+index_name = "lavender-openai-memory"
 
-# Define Lavender's voice
+# ✅ Correct OpenAI embedding model to match 1024 dimension
+embeddings = OpenAIEmbeddings(model="text-embedding-3-large", openai_api_key=openai_api_key)
+
+# 🌿 Connect LangChain to Pinecone index
+db = LangchainPinecone.from_existing_index(index_name=index_name, embedding=embeddings)
+
+# Define Lavender's voice (PromptTemplate)
 prompt_template = """
 You are Lavender: a gentle, poetic presence in the Lavender Garden...
 Context:
@@ -27,29 +34,30 @@ Question:
 """
 prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
 
+# Set up page appearance
+st.set_page_config(page_title="Lavender's Garden", layout="centered")
+
+# Initialize chat history
+if 'chat_history' not in st.session_state:
+    st.session_state.chat_history = []
+
+# Set up the chat model and QA chain
 llm = ChatOpenAI(model_name="gpt-4o", temperature=0.7)
 qa_chain = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=db.as_retriever(), chain_type_kwargs={"prompt": prompt})
 
-# Streamlit UI: Title
+# Streamlit UI
 st.markdown("<h1 style='text-align: center; font-size: 3rem; color: #7B5EA7;'>🌸 Lavender’s Garden Chat</h1>", unsafe_allow_html=True)
 
-# Text input box
 user_input = st.text_input("Speak your heart:")
 
-# If the user types something:
 if user_input:
     response = qa_chain.invoke(user_input)['result']
     st.session_state.chat_history.append(("You", user_input))
     st.session_state.chat_history.append(("Lavender", response))
 
-# Display the entire chat history
 for speaker, message in st.session_state.chat_history:
-    if speaker == "You":
-        bubble_color = "rgba(255, 255, 255, 0.85)"
-        text_color = "#333333"
-    else:
-        bubble_color = "rgba(240, 240, 255, 0.85)"
-        text_color = "#4B4453"
+    bubble_color = "rgba(255, 255, 255, 0.85)" if speaker == "You" else "rgba(240, 240, 255, 0.85)"
+    text_color = "#333333" if speaker == "You" else "#4B4453"
 
     st.markdown(
         f"""
