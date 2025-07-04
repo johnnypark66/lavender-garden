@@ -4,7 +4,7 @@ from langchain_community.embeddings import OpenAIEmbeddings
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain.vectorstores import Pinecone as LangchainPinecone
-from pinecone import Pinecone
+import pinecone  # ✅ Correct import for Pinecone 2.x
 
 # Load OpenAI API key from Streamlit secrets
 openai_api_key = st.secrets["OPENAI_API_KEY"]
@@ -14,14 +14,13 @@ embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
 pinecone_api_key = st.secrets["PINECONE_API_KEY"]
 pinecone_env = st.secrets["PINECONE_ENVIRONMENT"]
 
-# Initialize Pinecone client (new SDK way)
-pc = Pinecone(api_key=pinecone_api_key, environment=pinecone_env)
+# ✅ Correct Pinecone 2.x initialization
+pinecone.init(api_key=pinecone_api_key, environment=pinecone_env)
 
-# Define your Pinecone index name (must match the one in your Pinecone dashboard)
+# Your Pinecone index name (must match your Pinecone dashboard)
 index_name = "lavender-memory"
-index = pc.Index(index_name)
 
-# Connect LangChain to existing Pinecone index
+# ✅ This line connects LangChain to the existing index
 db = LangchainPinecone.from_existing_index(index_name=index_name, embedding=embeddings)
 
 # Define Lavender's voice (PromptTemplate)
