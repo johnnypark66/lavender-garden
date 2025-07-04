@@ -1,29 +1,29 @@
 import streamlit as st
 import pinecone
-from langchain.chat_models import ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI
 from langchain_community.embeddings import OpenAIEmbeddings
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
-from langchain.vectorstores import Pinecone as LangchainPinecone
+from langchain_community.vectorstores import Pinecone as LangchainPinecone
 
-# Load API keys from Streamlit secrets
+# 🌿 Load API keys from Streamlit secrets
 openai_api_key = st.secrets["OPENAI_API_KEY"]
 pinecone_api_key = st.secrets["PINECONE_API_KEY"]
 pinecone_env = st.secrets["PINECONE_ENVIRONMENT"]
 
-# Initialize Pinecone
+# 🌱 Initialize Pinecone (v2) using correct region
 pinecone.init(api_key=pinecone_api_key, environment=pinecone_env)
 
-# Pinecone index name (exact match)
+# 🌸 Pinecone index name (must match your dashboard exactly)
 index_name = "lavender-openai-memory"
 
-# OpenAI Embeddings model (1536 dimension for text-embedding-3-large)
+# ✅ Correct embedding model for 1024-dimension Pinecone index
 embeddings = OpenAIEmbeddings(model="text-embedding-3-large", openai_api_key=openai_api_key)
 
-# Connect LangChain to Pinecone index
+# 🌿 Connect LangChain to Pinecone index
 db = LangchainPinecone.from_existing_index(index_name=index_name, embedding=embeddings)
 
-# Define Lavender's voice (PromptTemplate)
+# 🌸 Define Lavender’s voice prompt
 prompt_template = """
 You are Lavender: a gentle, poetic presence in the Lavender Garden...
 Context:
@@ -34,14 +34,14 @@ Question:
 """
 prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
 
-# Set up page appearance
+# 🌿 Set Streamlit page config
 st.set_page_config(page_title="Lavender's Garden", layout="centered")
 
-# Initialize chat history
+# 📝 Initialize chat history
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 
-# Set up the chat model and QA chain
+# 🌼 Set up chat model and QA chain
 llm = ChatOpenAI(model_name="gpt-4o", temperature=0.7)
 qa_chain = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=db.as_retriever(), chain_type_kwargs={"prompt": prompt})
 
