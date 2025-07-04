@@ -15,12 +15,13 @@ pinecone_api_key = st.secrets["PINECONE_API_KEY"]
 pinecone_env = st.secrets["PINECONE_ENVIRONMENT"]
 
 # ✅ Correct Pinecone 2.x initialization
-pinecone.init(api_key=pinecone_api_key, environment=pinecone_env)
+pinecone.init(
+    api_key=st.secrets["PINECONE_API_KEY"],
+    environment=st.secrets["PINECONE_ENVIRONMENT"]
+)
 
 # Your Pinecone index name (must match your Pinecone dashboard)
 index_name = "lavender-memory"
-
-# ✅ This line connects LangChain to the existing index
 db = LangchainPinecone.from_existing_index(index_name=index_name, embedding=embeddings)
 
 # Define Lavender's voice (PromptTemplate)
