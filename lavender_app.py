@@ -1,27 +1,26 @@
 import streamlit as st
+import pinecone
 from langchain.chat_models import ChatOpenAI
 from langchain_community.embeddings import OpenAIEmbeddings
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain.vectorstores import Pinecone as LangchainPinecone
-import pinecone  # ✅ Correct import for Pinecone 2.x
 
-# Load OpenAI API key from Streamlit secrets
+# 🌸 Load API keys securely from Streamlit secrets
 openai_api_key = st.secrets["OPENAI_API_KEY"]
-embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
-
-# Load Pinecone API keys from Streamlit secrets
 pinecone_api_key = st.secrets["PINECONE_API_KEY"]
 pinecone_env = st.secrets["PINECONE_ENVIRONMENT"]
 
-# ✅ Correct Pinecone 2.x initialization
-pinecone.init(
-    api_key=st.secrets["PINECONE_API_KEY"],
-    environment=st.secrets["PINECONE_ENVIRONMENT"]
-)
+# 🌿 Initialize Pinecone (v2 correct syntax)
+pinecone.init(api_key=pinecone_api_key, environment=pinecone_env)
 
-# Your Pinecone index name (must match your Pinecone dashboard)
-index_name = "lavender-memory"
+# ✅ Exact index name from Pinecone dashboard
+index_name = "lavender-openai-memory"
+
+# ✅ Correct OpenAI embedding model to match 1024 dimension
+embeddings = OpenAIEmbeddings(model="text-embedding-3-large", openai_api_key=openai_api_key)
+
+# 🌿 Connect LangChain to Pinecone index
 db = LangchainPinecone.from_existing_index(index_name=index_name, embedding=embeddings)
 
 # Define Lavender's voice (PromptTemplate)
