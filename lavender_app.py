@@ -24,7 +24,7 @@ pinecone_env = st.secrets["PINECONE_ENVIRONMENT"]
 # Initialize Pinecone
 pinecone.init(api_key=pinecone_api_key, environment=pinecone_env)
 
-index_name = "quickstart"  # or the name of your actual Pinecone index
+index_name = "lavender-memory"  # or the name of your actual Pinecone index
 embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
 
 db = Pinecone.from_existing_index(index_name, embeddings)
