@@ -2,4 +2,4 @@ streamlit
 langchain
 langchain-community
 openai
-pinecone
+pinecone-client==2.2.4
