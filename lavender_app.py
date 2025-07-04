@@ -4,7 +4,8 @@ from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import OpenAIEmbeddings
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
-
+import os
+openai_api_key = st.secrets["OPENAI_API_KEY"]
 # Set up page
 st.set_page_config(page_title="Lavender's Garden", layout="centered")
 
@@ -13,7 +14,7 @@ if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 
 # Load memory (this must come before generating responses)
-embeddings = OpenAIEmbeddings()
+embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
 db = Chroma(persist_directory="./lavender_memory", embedding_function=embeddings)
 
 # Define Lavender's voice
