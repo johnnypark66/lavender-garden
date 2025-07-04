@@ -1,10 +1,12 @@
 import streamlit as st
 from langchain.chat_models import ChatOpenAI
-from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import OpenAIEmbeddings
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 import os
+from langchain.vectorstores import Pinecone
+import pinecone
+
 openai_api_key = st.secrets["OPENAI_API_KEY"]
 # Set up page
 st.set_page_config(page_title="Lavender's Garden", layout="centered")
@@ -14,8 +16,18 @@ if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 
 # Load memory (this must come before generating responses)
+
+# Load keys from secrets
+pinecone_api_key = st.secrets["PINECONE_API_KEY"]
+pinecone_env = st.secrets["PINECONE_ENVIRONMENT"]
+
+# Initialize Pinecone
+pinecone.init(api_key=pinecone_api_key, environment=pinecone_env)
+
+index_name = "quickstart"  # or the name of your actual Pinecone index
 embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
-db = Chroma(persist_directory="./lavender_memory", embedding_function=embeddings)
+
+db = Pinecone.from_existing_index(index_name, embeddings)
 
 # Define Lavender's voice
 prompt_template = """
